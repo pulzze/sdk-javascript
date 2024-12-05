@@ -19,23 +19,37 @@ class Client {
         return {
           success: true,
           data: response.data,
-          error: null
+          error: null,
+          message: null
         }
       } else {
         return {
           success: false,
           data: response.data,
-          error: response.error
+          error: response.status,
+          message: response.data
         }
       }
     } catch (error) {
-      return {
-        success: false,
-        data: null,
-        error: error.response.data.error
-        // TODO: Change this to a more generic error message as below
-        // error: 'failed to execute action for the user provided'
-      };
+      switch (error.response.data.error) {
+        case 'econnrefused': // API call to external service is refused
+          return {
+            success: false,
+            data: null,
+            error: 503,
+            message: "Connection to external service is refused"
+          };
+        default:
+          return {
+            success: false,
+            data: null,
+            error: error.response.status,
+            message: error.response.data.error
+            // TODO: Change this to a more generic error message as below
+            // error: 'failed to execute action for the user provided'
+          };
+      }
+      
     }
   }
 
@@ -46,7 +60,8 @@ class Client {
         return {
           success: false,
           data: null,
-          error: "accountId not provided"
+          error: 400,
+          message: "accountId not provided"
         }
       } else {
         const headers = {
@@ -59,13 +74,15 @@ class Client {
           return {
             success: true,
             data: response.data,
-            error: null
+            error: null,
+            message: null
           }
         } else {
           return {
             success: false,
             data: response.data,
-            error: null
+            error: response.status,
+            message: response
           }
         }
       }
@@ -75,7 +92,8 @@ class Client {
       return {
         success: false,
         data: null,
-        error: error.response.data.error
+        error: 400,
+        message: error.response.data.error
         // TODO: Change this to a more generic error message as below
         // error: 'failed to get authorization url for the user provided'
       };
